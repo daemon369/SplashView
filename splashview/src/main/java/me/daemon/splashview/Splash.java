@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.support.annotation.UiThread;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,21 +27,21 @@ public class Splash<T> {
     private final static String TAG = Splash.class.getSimpleName();
 
     private final Integer duration;
-    private final String imageUrl;
     private final T tag;
     private final View splashView;
     private final ImageView imageView;
     private final TextView timeView;
     private final View skipView;
     private final Callback<T> callback;
+    private final ImageAdapter<T> imageAdapter;
     private WeakReference<Activity> activityRef;
     private boolean isActionBarShowing;
 
-    private Splash(final Context context, final Integer layoutId, final View view, final Integer duration, final String imageUrl, final T tag, Callback<T> callback) {
+    private Splash(final Context context, final Integer layoutId, final View view, final Integer duration, final T tag, Callback<T> callback, ImageAdapter<T> imageAdapter) {
         this.duration = duration;
-        this.imageUrl = imageUrl;
         this.tag = tag;
         this.callback = callback;
+        this.imageAdapter = imageAdapter;
 
         if (null != layoutId) {
             splashView = LayoutInflater.from(context).inflate(layoutId, null);
@@ -62,7 +61,7 @@ public class Splash<T> {
             public void onClick(View v) {
                 hide();
                 if (null != Splash.this.callback) {
-                    Splash.this.callback.onSplashImageClicked(Splash.this, tag);
+                    Splash.this.callback.onSplashImageClicked(Splash.this);
                 }
             }
         });
@@ -82,7 +81,7 @@ public class Splash<T> {
             public void onClick(View v) {
                 hide();
                 if (null != Splash.this.callback) {
-                    Splash.this.callback.onSplashSkipClicked(Splash.this, tag);
+                    Splash.this.callback.onSplashSkipClicked(Splash.this);
                 }
             }
         });
@@ -140,6 +139,10 @@ public class Splash<T> {
 
             content.addView(splashView, lp);
 
+            if (null != imageAdapter) {
+                imageAdapter.setImage(this, imageView);
+            }
+
             hideSystemUi(activity);
 
             if (null != duration && duration > 0) {
@@ -158,7 +161,7 @@ public class Splash<T> {
                         } else {
                             hide();
                             if (null != callback) {
-                                callback.onSplashFinish(Splash.this, tag);
+                                callback.onSplashFinish(Splash.this);
                             }
                         }
                     }
@@ -229,11 +232,16 @@ public class Splash<T> {
 
     public interface Callback<T> {
 
-        void onSplashImageClicked(final Splash<T> splash, final T tag);
+        void onSplashImageClicked(final Splash<T> splash);
 
-        void onSplashSkipClicked(final Splash<T> splash, final T tag);
+        void onSplashSkipClicked(final Splash<T> splash);
 
-        void onSplashFinish(final Splash<T> splash, final T tag);
+        void onSplashFinish(final Splash<T> splash);
+    }
+
+    public interface ImageAdapter<T> {
+
+        void setImage(final Splash<T> splash, final ImageView imageView);
     }
 
     public static class Builder<T> {
@@ -241,9 +249,9 @@ public class Splash<T> {
         private Integer layoutId;
         private View view;
         private Integer duration;
-        private String imageUrl;
         private T tag;
         private Callback<T> callback;
+        private ImageAdapter<T> imageAdapter;
 
         public Builder(Context context) {
             if (null == context) {
@@ -274,6 +282,9 @@ public class Splash<T> {
             return this;
         }
 
+        /**
+         * 设置倒计时时间，不设置或设置为0，{@link SplashView}不自动退出
+         */
         public Builder<T> duration(final int duration) {
             if (duration < 0) {
                 throw new IllegalArgumentException("duration must not be negative");
@@ -285,17 +296,9 @@ public class Splash<T> {
             return this;
         }
 
-        public Builder<T> imageUrl(final String imgUrl) {
-            if (TextUtils.isEmpty(imgUrl)) {
-                throw new IllegalArgumentException("imageUrl must not be empty");
-            }
-            if (null != this.imageUrl) {
-                throw new IllegalStateException("imageUrl already set");
-            }
-            this.imageUrl = imgUrl;
-            return this;
-        }
-
+        /**
+         * 设置tag
+         */
         public Builder<T> tag(final T tag) {
             if (null == tag) {
                 throw new IllegalStateException("tag already set");
@@ -304,6 +307,9 @@ public class Splash<T> {
             return this;
         }
 
+        /**
+         * 设置回调
+         */
         public Builder<T> callback(final Callback<T> callback) {
             if (null != this.callback && null != callback) {
                 throw new IllegalStateException("callback already set");
@@ -312,8 +318,16 @@ public class Splash<T> {
             return this;
         }
 
+        public Builder<T> imageAdapter(final ImageAdapter<T> imageAdapter) {
+            if (null != this.imageAdapter) {
+                throw new IllegalStateException("imageAdapter already set");
+            }
+            this.imageAdapter = imageAdapter;
+            return this;
+        }
+
         public Splash<T> build() {
-            return new Splash<T>(context, layoutId, view, duration, imageUrl, tag, callback);
+            return new Splash<T>(context, layoutId, view, duration, tag, callback, imageAdapter);
         }
     }
 }
