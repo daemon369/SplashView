@@ -260,6 +260,14 @@ public class Splash<T> {
             this.context = context;
         }
 
+        /**
+         * 设置自定义布局，
+         * 自定义布局需要包含id为R.id.splash_view_image的ImageView、
+         * id为R.id.splash_view_time的TextView
+         * 以及id为R.id.splash_view_skip的View
+         *
+         * @param layoutId 布局资源ID
+         */
         public Builder<T> layoutId(final int layoutId) {
             if (layoutId <= 0) {
                 throw new IllegalArgumentException("layoutId must be positive");
@@ -271,6 +279,14 @@ public class Splash<T> {
             return this;
         }
 
+        /**
+         * 设置自定义布局，
+         * 自定义布局需要包含id为R.id.splash_view_image的ImageView、
+         * id为R.id.splash_view_time的TextView
+         * 以及id为R.id.splash_view_skip的View
+         *
+         * @param view 布局View
+         */
         public Builder<T> view(final View view) {
             if (null == view) {
                 throw new IllegalArgumentException("view must not be null");
@@ -318,6 +334,9 @@ public class Splash<T> {
             return this;
         }
 
+        /**
+         * 设置图片适配器
+         */
         public Builder<T> imageAdapter(final ImageAdapter<T> imageAdapter) {
             if (null != this.imageAdapter) {
                 throw new IllegalStateException("imageAdapter already set");

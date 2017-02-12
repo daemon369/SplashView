@@ -30,13 +30,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        SplashBean bean = new SplashBean("http://pic6.huitu.com/res/20130116/84481_20130116142820494200_1.jpg", "http://www.baidu.com");
+        SplashBean bean = new SplashBean("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1486907589533&di=1a9665fbf75fa80399a07c446d72f25a&imgtype=0&src=http%3A%2F%2Fattach.bbs.miui.com%2Fforum%2F201112%2F02%2F124550nk6mz2f6kh3hfkn1.png", "http://www.baidu.com");
 
         final Splash<SplashBean> splash = new Splash.Builder<SplashBean>(this)
                 .imageAdapter(new Splash.ImageAdapter<SplashBean>() {
                     @Override
                     public void setImage(Splash<SplashBean> splash, ImageView imageView) {
-                        Picasso.with(MainActivity.this).load(splash.getTag().imageUrl).into(imageView);
+                        Picasso.with(MainActivity.this).load(splash.getTag().imageUrl).fit().into(imageView);
                     }
                 })
                 .tag(bean)
