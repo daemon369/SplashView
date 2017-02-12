@@ -4,13 +4,13 @@ import android.content.Context;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 /**
  * @author daemon369
  * @since 2017/2/11
  */
-public class SplashView extends FrameLayout {
+public class SplashView extends RelativeLayout {
     public SplashView(Context context) {
         super(context);
 
@@ -37,6 +37,7 @@ public class SplashView extends FrameLayout {
     }
 
     private void init() {
+        setBackgroundResource(android.R.color.white);
         inflate(getContext(), R.layout.layout_splash_view, this);
     }
 }
