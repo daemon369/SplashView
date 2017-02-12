@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Looper;
 import android.support.annotation.UiThread;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -33,6 +36,7 @@ public class Splash<T> {
     private final View skipView;
     private final Callback<T> callback;
     private WeakReference<Activity> activityRef;
+    private boolean isActionBarShowing;
 
     private Splash(final Context context, final Integer layoutId, final View view, final Integer duration, final String imageUrl, final T tag, Callback<T> callback) {
         this.duration = duration;
@@ -96,12 +100,47 @@ public class Splash<T> {
         return null != activity && !activity.isFinishing();
     }
 
+    protected void hideSystemUi(final Activity activity) {
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (activity instanceof AppCompatActivity) {
+            ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
+            if (null != supportActionBar) {
+                supportActionBar.setShowHideAnimationEnabled(false);
+                isActionBarShowing = supportActionBar.isShowing();
+                supportActionBar.hide();
+            }
+        } else {
+            android.app.ActionBar actionBar = activity.getActionBar();
+            if (null != actionBar) {
+                isActionBarShowing = actionBar.isShowing();
+                actionBar.hide();
+            }
+        }
+    }
+
+    protected void showSystemUi(final Activity activity) {
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (activity instanceof AppCompatActivity) {
+            ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
+            if (null != supportActionBar) {
+                if (isActionBarShowing) supportActionBar.show();
+            }
+        } else {
+            android.app.ActionBar actionBar = activity.getActionBar();
+            if (null != actionBar) {
+                if (isActionBarShowing) actionBar.show();
+            }
+        }
+    }
+
     private void showInternal(final Activity activity) {
         if (isActivityAlive(activity)) {
             final ViewGroup content = (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
             final LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
             content.addView(splashView, lp);
+
+            hideSystemUi(activity);
 
             if (null != duration && duration > 0) {
                 timeView.setVisibility(View.VISIBLE);
@@ -171,6 +210,8 @@ public class Splash<T> {
                 if (isActivityAlive(activity)) {
                     final ViewGroup content = (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
                     content.removeView(splashView);
+
+                    showSystemUi(activity);
                 }
             }
         };
