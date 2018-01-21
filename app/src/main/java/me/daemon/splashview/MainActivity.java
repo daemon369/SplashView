@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "onSplashFinish");
                     }
                 })
+                .layoutId(R.layout.splash_layout)
                 .build();
         splash.show(this);
     }
