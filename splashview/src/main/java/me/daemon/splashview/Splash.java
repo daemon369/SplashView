@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,7 +52,7 @@ public class Splash<T> {
             splashView = new SplashView(context);
         }
 
-        imageView = (ImageView) splashView.findViewById(R.id.splash_view_image);
+        imageView = splashView.findViewById(R.id.splash_view_image);
         if (null == imageView) {
             throw new IllegalStateException("can't find an image view with id R.id.splash_view_image");
         }
@@ -66,7 +67,7 @@ public class Splash<T> {
             }
         });
 
-        timeView = (TextView) splashView.findViewById(R.id.splash_view_time);
+        timeView = splashView.findViewById(R.id.splash_view_time);
         if (null == timeView) {
             throw new IllegalStateException("can't find a text view with id R.id.splash_view_time");
         }
@@ -134,7 +135,7 @@ public class Splash<T> {
 
     private void showInternal(final Activity activity) {
         if (isActivityAlive(activity)) {
-            final ViewGroup content = (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
+            final ViewGroup content = activity.getWindow().getDecorView().findViewById(android.R.id.content);
             final LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
             content.addView(splashView, lp);
@@ -211,7 +212,7 @@ public class Splash<T> {
             @Override
             public void run() {
                 if (isActivityAlive(activity)) {
-                    final ViewGroup content = (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
+                    final ViewGroup content = activity.getWindow().getDecorView().findViewById(android.R.id.content);
                     content.removeView(splashView);
 
                     showSystemUi(activity);
@@ -246,6 +247,7 @@ public class Splash<T> {
 
     public static class Builder<T> {
         private final Context context;
+        private Class<? extends Splash> clz;
         private Integer layoutId;
         private View view;
         private Integer duration;
@@ -345,8 +347,32 @@ public class Splash<T> {
             return this;
         }
 
+        /**
+         * 设置自定义实现
+         */
+        public Builder<T> implementation(final Class<? extends Splash> clz) {
+            if (this.clz != null) {
+                throw new IllegalStateException("custom implementation already set");
+            }
+            this.clz = clz;
+            return this;
+        }
+
         public Splash<T> build() {
-            return new Splash<T>(context, layoutId, view, duration, tag, callback, imageAdapter);
+            Class<? extends Splash> c = Splash.class;
+            if (this.clz != null) {
+                c = this.clz;
+            }
+
+            try {
+                final Constructor<? extends Splash> constructor =
+                        c.getDeclaredConstructor(Context.class, Integer.class, View.class,
+                                Integer.class, Object.class, Callback.class, ImageAdapter.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(context, layoutId, view, duration, tag, callback, imageAdapter);
+            } catch (Exception e) {
+                return new Splash<>(context, layoutId, view, duration, tag, callback, imageAdapter);
+            }
         }
     }
 }
