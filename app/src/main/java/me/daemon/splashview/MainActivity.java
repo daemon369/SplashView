@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
             final String imageUrl;
             final String url;
 
-            SplashBean(String imageUrl, String url) {
+            private SplashBean(String imageUrl, String url) {
                 this.imageUrl = imageUrl;
                 this.url = url;
             }

@@ -3,6 +3,8 @@ package me.daemon.splashview;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Looper;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -38,13 +40,18 @@ public class Splash<T> {
     private WeakReference<Activity> activityRef;
     private boolean isActionBarShowing;
 
-    private Splash(final Context context, final Integer layoutId, final View view, final Integer duration, final T tag, Callback<T> callback, ImageAdapter<T> imageAdapter) {
+    private Splash(@NonNull final Context context,
+                   @LayoutRes final int layoutId,
+                   final View view,
+                   final Integer duration,
+                   final T tag, Callback<T> callback,
+                   final ImageAdapter<T> imageAdapter) {
         this.duration = duration;
         this.tag = tag;
         this.callback = callback;
         this.imageAdapter = imageAdapter;
 
-        if (null != layoutId) {
+        if (layoutId > 0) {
             splashView = LayoutInflater.from(context).inflate(layoutId, null);
         } else if (null != view) {
             splashView = view;
@@ -270,7 +277,7 @@ public class Splash<T> {
          *
          * @param layoutId 布局资源ID
          */
-        public Builder<T> layoutId(final int layoutId) {
+        public Builder<T> layoutId(@LayoutRes final int layoutId) {
             if (layoutId <= 0) {
                 throw new IllegalArgumentException("layoutId must be positive");
             }
@@ -366,8 +373,14 @@ public class Splash<T> {
 
             try {
                 final Constructor<? extends Splash> constructor =
-                        c.getDeclaredConstructor(Context.class, Integer.class, View.class,
-                                Integer.class, Object.class, Callback.class, ImageAdapter.class);
+                        c.getDeclaredConstructor(
+                                Context.class,
+                                Integer.class,
+                                View.class,
+                                Integer.class,
+                                Object.class,
+                                Callback.class,
+                                ImageAdapter.class);
                 constructor.setAccessible(true);
                 return constructor.newInstance(context, layoutId, view, duration, tag, callback, imageAdapter);
             } catch (Exception e) {
